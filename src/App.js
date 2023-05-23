@@ -4,13 +4,10 @@ import { useEffect, useState } from "react";
 import { Container, List, Paper } from "@mui/material";
 import AddTodo from "./AddTodo";
 import { call } from "./service/ApiService";
+import Navigation from "./Navigation";
 
 function App() {
-  // const [item, setItem] = useState({
-  //   id: "0",
-  //   title: "Hello World 1",
-  //   done: true,
-  // });
+  const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([
     { id: "0", title: "Hello World0", done: true },
     { id: "1", title: "Hello World1", done: false },
@@ -21,62 +18,57 @@ function App() {
   }
 
   const addItem = (item) => {
-    // item.id = "ID-" + items.length;
-    // item.done = false;
-    // setItems([...items, item]);
-    // console.log(items);
     call("/todo", "POST", item).then((resp) => setItems(resp.data));
   };
 
   const deleteItem = (item) => {
-    // setItems([...items.filter((e) => e.id !== item.id)]);
     call("/todo", "DELETE", item).then((resp) => setItems(resp.data));
   };
 
   const editItem = (item) => {
-    // setItems([...items]);
     call("/todo", "PUT", item).then((resp) => setItems(resp.data));
   };
 
-  const requestOptions = {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  };
+  // const requestOptions = {
+  //   method: "GET",
+  //   headers: { "Content-Type": "application/json" },
+  // };
 
   useEffect(() => {
-    // fetch("http://localhost:8080/todo", requestOptions)
-    //   .then((resp) => resp.json())
-    //   .then(
-    //     (resp) => {
-    //       setItems(resp.data);
-    //     },
-    //     (error) => {
-    //       console.log(error);
-    //     }
-    //   );
     call("/todo", "GET", null).then((resp) => setItems(resp.data));
+    setTimeout(() => {
+      setLoading(false);
+    }, 300);
   }, []);
 
-  let todoItems =
-    items.length > 0 &&
-    items.map((item) => (
-      <Paper style={{ margin: 16 }}>
-        <List>
+  let todoItems = items.length > 0 && (
+    <Paper style={{ margin: 16 }}>
+      <List>
+        {items.map((item) => (
           <Todo
             item={item}
             key={item.id}
             deleteItem={deleteItem}
             editItem={editItem}
           />
-        </List>
-      </Paper>
-    ));
+        ))}
+      </List>
+    </Paper>
+  );
+
   return (
     <div className="App">
-      <Container maxWidth="md">
-        <AddTodo addItem={addItem} />
-        <div className="TodoList">{todoItems}</div>
-      </Container>
+      {loading ? (
+        <h1> 로딩 중..</h1>
+      ) : (
+        <div>
+          <Navigation />
+          <Container maxWidth="md">
+            <AddTodo addItem={addItem} />
+            {todoItems}
+          </Container>
+        </div>
+      )}
     </div>
   );
 }
